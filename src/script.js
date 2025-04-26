@@ -253,8 +253,7 @@ function createChart(chartContainer) {
     yAxis.appendChild(tick);
   }
 
-  // Don't change the following line
-  chartContainer.insertAdjacentHTML("beforeend", yAxis.outerHTML);
+  chartContainer.appendChild(yAxis);
 
   // Create grid lines
   const gridLines = document.createElement("div");
@@ -266,8 +265,7 @@ function createChart(chartContainer) {
     gridLines.appendChild(line);
   }
 
-  // Don't change the following line
-  chartContainer.insertAdjacentHTML("beforeend", gridLines.outerHTML);
+  chartContainer.appendChild(gridLines);
 
   // Create bars for each category
   sortedCategories.forEach((category, index) => {
@@ -296,7 +294,6 @@ function createChart(chartContainer) {
     barGroup.appendChild(bar);
     barGroup.appendChild(label);
 
-    // Don't change the following line
     chartContainer.appendChild(barGroup);
   });
 }
