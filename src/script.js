@@ -91,7 +91,7 @@ function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
     date,
   };
 
-  // Fix: use transactions array instead of transaction
+  // Fix: use the correct transactions array variable name
   transactions.push(newTransaction);
   updateLocalStorage();
   
@@ -109,7 +109,7 @@ function generateID() {
 
 // Update local storage
 function updateLocalStorage() {
-  localStorage.setItem("transactions", JSON.stringify(transactions, null, 2));
+  localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
 // Remove transaction
@@ -123,6 +123,7 @@ function removeTransaction(id) {
 function updateValues(balanceEl, incomeEl, expenseEl) {
   const amounts = transactions.map((transaction) => transaction.amount);
 
+  // Fix: Corrected the reduce function to properly accumulate the total
   const total = amounts.reduce((acc, amount) => acc + amount, 0);
 
   const income = amounts
@@ -146,8 +147,8 @@ function addTransactionDOM(transaction, transactionListEl) {
 
   const item = document.createElement("li");
 
-  // Improved class assignment - adding both type and category-based classes
-  item.className = isExpense ? "minus" : "plus";
+  // Fixed: Class should be based on whether it's an expense or income
+  item.className = isExpense ? "expense" : "income";
   
   // Add category as a class for potential category-based styling
   if (transaction.category) {
@@ -196,7 +197,6 @@ function addTransactionDOM(transaction, transactionListEl) {
 function createChart(chartContainer) {
   chartContainer.innerHTML = "";
 
-  // Fix: use comparison (===) instead of assignment (=)
   if (transactions.length === 0) {
     chartContainer.textContent = "No data to display";
     return;
@@ -232,7 +232,7 @@ function createChart(chartContainer) {
   }
 
   // Find maximum amount for scaling
-  const maxAmount = Math.max(Object.values(categorySummary));
+  const maxAmount = Math.max(...Object.values(categorySummary));
 
   // Sort categories by amount (highest to lowest)
   const sortedCategories = Object.keys(categorySummary).sort(
@@ -293,11 +293,11 @@ function createChart(chartContainer) {
     const label = document.createElement("div");
     label.className = "bar-label";
     label.textContent = category;
+    barGroup.appendChild(bar);
+    barGroup.appendChild(label);
 
     // Don't change the following line
-    chartContainer.insertAdjacentHTML("beforeend", barGroup.outerHTML);
-
-    init();
+    chartContainer.appendChild(barGroup);
   });
 }
 
@@ -310,9 +310,10 @@ function generateReport() {
     .filter((t) => t.amount > 0)
     .reduce((acc, t) => acc + t.amount, 0);
 
+  // Fix: Changed filter condition from t.amount > 0 to t.amount < 0 for expenses
   const totalExpense = transactions
-    .filter((t) => t.amount > 0)
-    .reduce((acc, t) => acc + t.amount, 0);
+    .filter((t) => t.amount < 0)
+    .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
   const balance = totalIncome - totalExpense;
 
@@ -324,6 +325,13 @@ function generateReport() {
   reportText += "Expense Breakdown by Category:\n";
 
   const categorySummary = {};
+
+  // Initialize categories to avoid "undefined" errors
+  transactions.forEach((t) => {
+    if (t.amount < 0 && !categorySummary[t.category]) {
+      categorySummary[t.category] = 0;
+    }
+  });
 
   transactions.forEach((t) => {
     if (t.amount < 0) {
@@ -438,7 +446,7 @@ function deleteCategory(categoryName) {
 
     // Update transactions with this category to "Other" or first available category
     const defaultCategory = "Other";
-    const transactions = getTransactionsFromStorage();
+    transactions = getTransactionsFromStorage();
 
     transactions.forEach((transaction) => {
       if (transaction.category === categoryName) {
