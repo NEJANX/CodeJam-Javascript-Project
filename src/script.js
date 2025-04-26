@@ -181,20 +181,16 @@ function addTransactionDOM(transaction, transactionListEl) {
   amountSpan.classList.add(isExpense ? "minus" : "plus");
   amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(2)}`;
 
-  let deleteBtn = document.createElement("button");
+  const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
   deleteBtn.textContent = "×";
+  deleteBtn.addEventListener("click", () => removeTransaction(transaction.id));
 
   item.appendChild(detailsDiv);
   item.appendChild(amountSpan);
   item.appendChild(deleteBtn);
 
-  // Don't change the following line
-  transactionListEl.insertAdjacentHTML("beforeend", item.outerHTML);
-
-  // Add event listener to delete button
-  transactionListEl.lastElementChild.querySelector(".delete-btn")
-    .addEventListener("click", () => removeTransaction(transaction.id));
+  transactionListEl.appendChild(item);
 }
 
 function createChart(chartContainer) {
