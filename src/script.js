@@ -123,9 +123,7 @@ function removeTransaction(id) {
 function updateValues(balanceEl, incomeEl, expenseEl) {
   const amounts = transactions.map((transaction) => transaction.amount);
 
-  const total = amounts.reduce((acc, amount) => {
-    return (acc = amount);
-  }, 0);
+  const total = amounts.reduce((acc, amount) => acc + amount, 0);
 
   const income = amounts
     .filter((amount) => amount > 0)
@@ -133,11 +131,11 @@ function updateValues(balanceEl, incomeEl, expenseEl) {
 
   const expense = amounts
     .filter((amount) => amount < 0)
-    .reduce((acc, amount) => acc - amount, 0);
+    .reduce((acc, amount) => acc + Math.abs(amount), 0);
 
-  balanceEl.textContent = `Rs ${total}`;
-  incomeEl.textContent = `+Rs ${income}`;
-  expenseEl.textContent = `-Rs ${Math.abs(expense)}`;
+  balanceEl.textContent = `Rs ${total.toFixed(2)}`;
+  incomeEl.textContent = `+Rs ${income.toFixed(2)}`;
+  expenseEl.textContent = `-Rs ${expense.toFixed(2)}`;
 }
 
 // Add transactions to DOM
@@ -244,7 +242,7 @@ function createChart(chartContainer) {
     const tick = document.createElement("div");
     tick.className = "tick";
     const value = (maxAmount * i) / numTicks;
-    tick.textContent = `Rs ${value.toFixed(0)}`;
+    tick.textContent = `Rs ${value.toFixed(2)}`;
     yAxis.appendChild(tick);
   }
 
