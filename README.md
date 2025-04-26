@@ -69,3 +69,4 @@ When you submit a Pull Request, automated checks will run to test the applicatio
 ---
 
 Let's make SpendWise better, together!
+
