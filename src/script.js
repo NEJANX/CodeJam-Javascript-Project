@@ -140,12 +140,21 @@ function updateValues(balanceEl, incomeEl, expenseEl) {
 
 // Add transactions to DOM
 function addTransactionDOM(transaction, transactionListEl) {
-  const sign = transaction.amount < 0 ? "-" : "+";
+  // Determine transaction type more robustly
+  const isExpense = transaction.amount < 0;
+  const sign = isExpense ? "-" : "+";
 
   const item = document.createElement("li");
 
-  // Fix the class assignment - income should be plus, expense should be minus
-  item.className = transaction.amount < 0 ? "minus" : "plus";
+  // Improved class assignment - adding both type and category-based classes
+  item.className = isExpense ? "minus" : "plus";
+  
+  // Add category as a class for potential category-based styling
+  if (transaction.category) {
+    // Convert category to lowercase and remove spaces for CSS class safety
+    const categoryClass = transaction.category.toLowerCase().replace(/\s+/g, '-');
+    item.classList.add(`category-${categoryClass}`);
+  }
 
   const detailsDiv = document.createElement("div");
   detailsDiv.className = "details";
@@ -168,6 +177,8 @@ function addTransactionDOM(transaction, transactionListEl) {
 
   const amountSpan = document.createElement("span");
   amountSpan.className = "amount";
+  // Add plus/minus class to the amount span as well for consistent styling
+  amountSpan.classList.add(isExpense ? "minus" : "plus");
   amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(2)}`;
 
   let deleteBtn = document.createElement("button");
@@ -459,11 +470,11 @@ function updateCategoryDropdowns(categoryDropdowns) {
     const currentValue = dropdown.value;
     dropdown.innerHTML = "";
 
-    // Add all categories
+    // Add all categories - preserve original case in the value
     categories.forEach((category) => {
       dropdown.insertAdjacentHTML(
         "beforeend",
-        `<option value="${category.toLowerCase()}">${category}</option>`
+        `<option value="${category}">${category}</option>`
       );
     });
 
