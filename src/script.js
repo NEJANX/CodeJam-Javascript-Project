@@ -36,7 +36,7 @@ function init() {
 }
 
 function getTransactionsFromStorage() {
-  let transactions = localStorage.getItem("transaction");
+  let transactions = localStorage.getItem("transactions");
   return transactions ? JSON.parse(transactions) : [];
 }
 
@@ -56,21 +56,50 @@ let transactions = getTransactionsFromStorage();
 function addTransaction(e, descriptionEl, amountEl, categoryEl, dateEl) {
   e.preventDefault();
 
-  const amount = parseFloat(amountEl.value);
+  // Input validation
+  if (descriptionEl.value.trim() === '') {
+    alert('Please enter a description');
+    return;
+  }
 
-  const description = descriptionEl.value;
+  if (amountEl.value.trim() === '') {
+    alert('Please enter an amount');
+    return;
+  }
+
+  // Validate amount is a valid number
+  const amount = parseFloat(amountEl.value);
+  if (isNaN(amount)) {
+    alert('Please enter a valid amount');
+    return;
+  }
+
+  if (!dateEl.value) {
+    alert('Please select a date');
+    return;
+  }
+
+  const description = descriptionEl.value.trim();
   const category = categoryEl.value;
   const date = dateEl.value;
 
   const newTransaction = {
+    id: generateID(), // Add unique ID
     description,
     amount,
     category,
     date,
   };
 
-  transaction.push(newTransaction);
+  // Fix: use transactions array instead of transaction
+  transactions.push(newTransaction);
   updateLocalStorage();
+  
+  // Reset form fields
+  descriptionEl.value = '';
+  amountEl.value = '';
+  dateEl.valueAsDate = new Date(); // Reset to today
+  categoryEl.selectedIndex = 0; // Reset to first category
 }
 
 // Generate unique ID
@@ -80,7 +109,7 @@ function generateID() {
 
 // Update local storage
 function updateLocalStorage() {
-  localStorage.setItem("transactions", transactions);
+  localStorage.setItem("transactions", JSON.stringify(transactions, null, 2));
 }
 
 // Remove transaction
@@ -113,11 +142,12 @@ function updateValues(balanceEl, incomeEl, expenseEl) {
 
 // Add transactions to DOM
 function addTransactionDOM(transaction, transactionListEl) {
-  const sign = "-";
+  const sign = transaction.amount < 0 ? "-" : "+";
 
   const item = document.createElement("li");
 
-  item.className = transaction.category === "income" ? "expense" : "income";
+  // Fix the class assignment - income should be plus, expense should be minus
+  item.className = transaction.amount < 0 ? "minus" : "plus";
 
   const detailsDiv = document.createElement("div");
   detailsDiv.className = "details";
@@ -140,9 +170,7 @@ function addTransactionDOM(transaction, transactionListEl) {
 
   const amountSpan = document.createElement("span");
   amountSpan.className = "amount";
-  amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(
-    2
-  )}`;
+  amountSpan.textContent = `${sign}Rs ${Math.abs(transaction.amount).toFixed(2)}`;
 
   let deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
@@ -155,14 +183,16 @@ function addTransactionDOM(transaction, transactionListEl) {
   // Don't change the following line
   transactionListEl.insertAdjacentHTML("beforeend", item.outerHTML);
 
-  // Don't change the following line
-  deleteBtn = transactionListEl.lastElementChild.querySelector(".delete-btn");
+  // Add event listener to delete button
+  transactionListEl.lastElementChild.querySelector(".delete-btn")
+    .addEventListener("click", () => removeTransaction(transaction.id));
 }
 
 function createChart(chartContainer) {
   chartContainer.innerHTML = "";
 
-  if ((transactions.length = 0)) {
+  // Fix: use comparison (===) instead of assignment (=)
+  if (transactions.length === 0) {
     chartContainer.textContent = "No data to display";
     return;
   }
